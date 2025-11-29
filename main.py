@@ -130,7 +130,7 @@ async def chat_with_ollama(session_id: str, user_message: str) -> str:
     try:
         # Call Ollama Cloud
         response = ollama_client.chat(
-            model="gpt-oss:20b-cloud",
+            model="gemini-3-pro-preview:latest",
             messages=messages
         )
         
