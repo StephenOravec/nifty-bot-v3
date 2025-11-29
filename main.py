@@ -207,3 +207,25 @@ async def health_check():
     """Health check endpoint for Cloud Run."""
     return {"status": "ok"}
 
+
+
+# ----------------------
+# Startup Event
+# ----------------------
+@app.on_event("startup")
+async def startup_event():
+    """Log startup information."""
+    logger.info("=" * 50)
+    logger.info("nifty-bot-v3 starting up")
+    logger.info(f"Ollama API key configured: {'Yes' if OLLAMA_API_KEY else 'No'}")
+    logger.info(f"Database path: {DB_PATH}")
+    logger.info("=" * 50)
+
+
+# ----------------------
+# Shutdown Event
+# ----------------------
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Log shutdown information."""
+    logger.info("nifty-bot-v3 shutting down")
