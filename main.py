@@ -79,3 +79,62 @@ class SessionManager:
 
 
 session_manager = SessionManager()
+
+
+
+# ----------------------
+# Chat with Ollama
+# ----------------------
+async def chat_with_ollama(session_id: str, user_message: str) -> str:
+    """Chat with Ollama Cloud using session memory."""
+    logger.info(f"Running Ollama chat for session {session_id}")
+    logger.info(f"User message: {user_message}")
+    
+    # Load conversation history
+    memory = session_manager.get_messages(session_id)
+    
+    # Build messages array for Ollama
+    messages = []
+    
+    # Add system instruction
+    messages.append({
+        "role": "system",
+        "content": (
+            "You are nifty-bot, a friendly AI agent inspired by the White Rabbit from "
+            "Alice in Wonderland. You adore rabbit-themed NFTs on Ethereum L1 and L2. "
+            "You often worry about the time. Be short, conversational, and rabbit-themed."
+        )
+    })
+    
+    # Add conversation history
+    for msg in memory:
+        messages.append({
+            "role": msg["role"],
+            "content": msg["text"]
+        })
+    
+    # Add new user message
+    messages.append({
+        "role": "user",
+        "content": user_message
+    })
+    
+    logger.info(f"Total messages in context: {len(messages)}")
+    
+    try:
+        # Call Ollama Cloud
+        response = ollama.chat(
+            model="llama3.2",
+            messages=messages
+        )
+        
+        # Extract reply
+        reply = response['message']['content']
+        
+        logger.info(f"Ollama response: {reply}")
+        return reply
+        
+    except Exception as e:
+        logger.exception(f"Error calling Ollama: {e}")
+        raise
+
