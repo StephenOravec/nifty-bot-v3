@@ -3,6 +3,7 @@ import os
 import sqlite3
 import secrets
 import logging
+import json
 import ollama
 
 # ----------------------
