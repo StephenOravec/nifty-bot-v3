@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 
 # Configure Ollama libray to use Ollama Cloud
-ollama.set_api_key(OLLAMA_API_KEY)
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+if not OLLAMA_API_KEY:
+    logger.warning("OLLAMA_API_KEY not set - Ollama calls may fail")
 
 app = FastAPI()
 
