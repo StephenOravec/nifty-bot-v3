@@ -4,7 +4,7 @@ import sqlite3
 import secrets
 import logging
 import json
-import ollama
+from ollama import Client
 
 # ----------------------
 # Logging Setup
@@ -19,11 +19,15 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ----------------------
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
-
-# Configure Ollama libray to use Ollama Cloud
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 if not OLLAMA_API_KEY:
     logger.warning("OLLAMA_API_KEY not set - Ollama calls may fail")
+
+# Configure Ollama client to use Ollama Cloud
+ollama_client = Client(
+    host='https://ollama.com/api',
+    headers={'Authorization': f'Bearer {OLLAMA_API_KEY}'}
+)
+
 
 app = FastAPI()
 
@@ -125,7 +129,7 @@ async def chat_with_ollama(session_id: str, user_message: str) -> str:
     
     try:
         # Call Ollama Cloud
-        response = ollama.chat(
+        response = ollama_client.chat(
             model="llama3.2",
             messages=messages
         )
