@@ -24,7 +24,7 @@ if not OLLAMA_API_KEY:
 
 # Configure Ollama client to use Ollama Cloud
 ollama_client = Client(
-    host='https://ollama.com/api',
+    host='https://ollama.com',
     headers={'Authorization': f'Bearer {OLLAMA_API_KEY}'}
 )
 
