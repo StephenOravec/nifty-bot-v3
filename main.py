@@ -138,3 +138,72 @@ async def chat_with_ollama(session_id: str, user_message: str) -> str:
         logger.exception(f"Error calling Ollama: {e}")
         raise
 
+
+
+# ----------------------
+# Routes
+# ----------------------
+@app.post("/chat")
+async def chat(request: Request):
+    """
+    Chat endpoint for nifty-bot-v3.
+    
+    Expects JSON:
+    {
+        "session_id": "optional-session-id",
+        "message": "user message"
+    }
+    
+    Returns JSON:
+    {
+        "response": "bot response",
+        "session_id": "session-id"
+    }
+    """
+    try:
+        data = await request.json()
+        session_id = data.get("session_id")
+        message = data.get("message", "").strip()
+
+        logger.info(f"Received chat request - session_id: {session_id}, message: {message}")
+
+        # Validate message
+        if not message:
+            logger.warning("Empty message received")
+            raise HTTPException(status_code=400, detail="message required")
+
+        # Generate session_id if first request
+        if not session_id:
+            session_id = secrets.token_urlsafe(32)
+            logger.info(f"Generated new session_id: {session_id}")
+
+        # Chat with Ollama
+        try:
+            reply = await chat_with_ollama(session_id, message)
+            logger.info(f"Ollama returned reply: {reply}")
+        except Exception as ollama_error:
+            logger.exception(f"Ollama chat failed: {ollama_error}")
+            return {
+                "response": "Sorry, I encountered an error. Please try again!",
+                "session_id": session_id
+            }
+
+        # Save messages to SQLite
+        session_manager.save_message(session_id, "user", message)
+        session_manager.save_message(session_id, "assistant", reply)
+
+        logger.info(f"Sending response: {reply}")
+        return {"response": reply, "session_id": session_id}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Unexpected error in chat endpoint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Cloud Run."""
+    return {"status": "ok"}
+
